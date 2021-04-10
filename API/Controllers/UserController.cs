@@ -7,21 +7,23 @@ using hrapp.Core.Interface;
 using hrapp.Infrastructure.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Core.Interface;
 
 namespace hrapp.API.Controllers
 {
     public class UserController : BaseApiController
     {
-        private readonly IUserRepository _repo;
-        public UserController(IUserRepository repo)
+        private readonly IUserService _userService;
+
+        public UserController(IUserService userService)
         {
-            _repo = repo;
+            _userService = userService;
         }
 
         [HttpGet]
         public async Task<ActionResult<IReadOnlyList<User>>> GetUsers()
         {
-            var users = await _repo.GetUsersAsync();
+            var users = await _userService.GetUsersAsync();
 
             return Ok(users);
         }
@@ -29,7 +31,7 @@ namespace hrapp.API.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<User>> GetUserById(int id)
         {
-            var result = await _repo.GetUserByIdAsync(id);
+            var result = await _userService.GetUserByIdAsync(id);
             if (result == null)
             return NotFound();
 
@@ -39,7 +41,7 @@ namespace hrapp.API.Controllers
         [HttpGet("getUserByName/{name}")]
         public async Task<ActionResult<User>> GetUserByName(string name)
         {
-            var result = await _repo.GetUserByNameAsync(name);
+            var result = await _userService.GetUserByNameAsync(name);
 
             return Ok(result);
         }
@@ -49,19 +51,20 @@ namespace hrapp.API.Controllers
         {
             if (ModelState.IsValid)
             {
-                await _repo.CreateUser(user);
+                await _userService.CreateUser(user);
                 return CreatedAtAction("GetUserByName", new { name =  user.LastName }, user);
             }
 
             return BadRequest(ModelState);
         }
 
-        [HttpPut]
-        public async Task<ActionResult> UpdateUser([FromBody] User user)
+        [HttpPut("{id}")]
+        public async Task<ActionResult> UpdateUser(int id, [FromBody] User user)
         {
             if (ModelState.IsValid)
             {
-                await _repo.UpdateUser(user);
+                user.Id = id;
+                await _userService.UpdateUser(user);
                 return Ok();
             }
 

@@ -1,7 +1,9 @@
+using Core.Interface;
 using hrapp.API.Controllers.Errors;
 using hrapp.API.Middleware;
 using hrapp.Core.Interface;
 using hrapp.Infrastructure.Data;
+using Infrastructure.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -24,9 +26,13 @@ namespace API
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<IUserService, UserService>();
+
             services.AddControllers();
+
             var sqlConnectionString = _config["PostgreSqlConnectionString"];
             services.AddDbContext<HrContext>(options => options.UseNpgsql(sqlConnectionString));
+            
             services.AddSwaggerGen(c => c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo{ Title = "API", Version ="v1" }));
 
             services.Configure<ApiBehaviorOptions>(options =>
